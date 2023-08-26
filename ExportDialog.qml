@@ -5,7 +5,7 @@ import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.3
 import AlgWidgets 2.0
 
-import "photoshop.js" as Photoshop
+import "Krita.js" as Krita
 
 AlgDialog {
     width: 400
@@ -38,7 +38,7 @@ AlgDialog {
     function reload() {
         var documentStructure = alg.mapexport.documentStructure()
         documentStructureModel.clear()
-        var mapsList = Photoshop.exportMaps();
+        var mapsList = Krita.exportMaps();
         for (var materialId in documentStructure.materials) {
             var material = documentStructure.materials[materialId]
             var id = internal.nextModelIndex(documentStructureModel, material.name)

@@ -20,9 +20,9 @@ AlgDialog {
 
   onAccepted: {
     if (path.text != "...") {
-			alg.settings.setValue("photoshopPath", path.text);
+			alg.settings.setValue("KritaPath", path.text);
 		}
-		alg.settings.setValue("launchPhotoshop", launchPhotoshopCheckBox.checked);
+		alg.settings.setValue("launchKrita", launchKritaCheckBox.checked);
 		alg.settings.setValue("padding", paddingCheckBox.checked);
         var index = bitDepthComboBox.currentIndex
         alg.settings.setValue("bitDepth", bitDepthModel.get(index).value);
@@ -38,7 +38,7 @@ AlgDialog {
 
     function reload() {
       path.reload()
-      launchPhotoshopCheckBox.reload()
+      launchKritaCheckBox.reload()
       paddingCheckBox.reload()
       bitDepthComboBox.reload()
     }
@@ -57,7 +57,7 @@ AlgDialog {
           Layout.fillWidth: true
 
           AlgLabel {
-            text: qsTr("Path to Photoshop")
+            text: qsTr("Path to Krita")
             Layout.fillWidth: true
           }
 
@@ -73,7 +73,7 @@ AlgDialog {
               Layout.fillWidth: true
 
               function reload() {
-                text = alg.settings.value("photoshopPath", "...")
+                text = alg.settings.value("KritaPath", "...")
               }
 
               Component.onCompleted: {
@@ -97,15 +97,15 @@ AlgDialog {
           Layout.fillWidth: true
 
           AlgLabel {
-            text: qsTr("Launch photoshop after export")
+            text: qsTr("Launch Krita after export")
             Layout.fillWidth: true
           }
 
           AlgCheckBox {
-            id: launchPhotoshopCheckBox
+            id: launchKritaCheckBox
 
             function reload() {
-              checked = alg.settings.value("launchPhotoshop", false);
+              checked = alg.settings.value("launchKrita", false);
             }
 
             Component.onCompleted: {
@@ -175,8 +175,8 @@ AlgDialog {
 
   FileDialog {
     id: searchPathDialog
-    title: qsTr("Choose a Photoshop executable file...")
-    nameFilters: [ "Photoshop files (*.exe *.app)", "All files (*)" ]
+    title: qsTr("Choose a Krita executable file...")
+    nameFilters: [ "Krita files (*.exe *.app)", "All files (*)" ]
     selectedNameFilter: "Executable files (*)"
     onAccepted: {
       path.text = alg.fileIO.urlToLocalFile(fileUrl.toString())

@@ -7,20 +7,20 @@ import QtQuick.Controls.Styles 1.4
 import AlgWidgets 2.0
 import AlgWidgets.Style 2.0
 
-import "photoshop.js" as Photoshop
+import "Krita.js" as Krita
 
 PainterPlugin {
 	Component.onCompleted: {
 		// default value settings
-		if (!alg.settings.contains("launchPhotoshop")) {
+		if (!alg.settings.contains("launchKrita")) {
 			if (Qt.platform.os == "windows" || Qt.platform.os == "osx") {
-				alg.settings.setValue("launchPhotoshop", true);
+				alg.settings.setValue("launchKrita", true);
 		 	} else {
-				alg.settings.setValue("launchPhotoshop", false);
+				alg.settings.setValue("launchKrita", false);
 		 	}
 		 	alg.settings.setValue("padding", false);
 		}
-		var sendtoAction = alg.ui.addAction(alg.ui.AppMenu.SendTo, qsTr("Export to Photoshop"), qsTr("Export to Photoshop"), Qt.resolvedUrl("icons/Photoshop_idle.svg"), Qt.resolvedUrl("icons/Photoshop_idle.svg"));
+		var sendtoAction = alg.ui.addAction(alg.ui.AppMenu.SendTo, qsTr("Export to Krita"), qsTr("Export to Krita"), Qt.resolvedUrl("icons/Photoshop_idle.svg"), Qt.resolvedUrl("icons/Photoshop_idle.svg"));
 		sendtoAction.triggered.connect(internal.sendToTriggered);
 	}
 
@@ -49,7 +49,7 @@ PainterPlugin {
 			try {
 				loading = true;
 				progressWindow.open()
-				Photoshop.importPainterDocument(updateProgressWindow);
+				Krita.importPainterDocument(updateProgressWindow);
 			}
 			catch (e) {
 				alg.log.warn(e.message)
@@ -62,7 +62,7 @@ PainterPlugin {
 
 		function sendToTriggered() {
 			if (!internal.loading) {
-				if (!alg.settings.contains("photoshopPath") && alg.settings.value("launchPhotoshop", false)) {
+				if (!alg.settings.contains("KritaPath") && alg.settings.value("launchKrita", false)) {
 					fileDialog.open();
 				} else {
 					internal.launchExportDialog()
@@ -86,7 +86,7 @@ PainterPlugin {
 		minimumHeight: 125
 		maximumWidth: 400
 		maximumHeight: 125
-		title: qsTr("Export to Photoshop")
+		title: qsTr("Export to Krita")
 		flags: Qt.Dialog | Qt.CustomizeWindowHint | Qt.WindowTitleHint | Qt.WindowSystemMenuHint
 		function reload() {
 			progressText.text = qsTr("Export in progress...")
@@ -131,12 +131,12 @@ PainterPlugin {
 
 	FileDialog {
 		id: fileDialog
-		title: qsTr("Please locate Photoshop...")
-		nameFilters: [ "Photoshop files (*.exe *.app)", "All files (*)" ]
+		title: qsTr("Please locate Krita...")
+		nameFilters: [ "Krita files (*.exe *.app)", "All files (*)" ]
 		selectedNameFilter: "Executable files (*)"
 		onAccepted: {
-			alg.settings.setValue("photoshopPath", alg.fileIO.urlToLocalFile(fileUrl.toString()));
+			alg.settings.setValue("KritaPath", alg.fileIO.urlToLocalFile(fileUrl.toString()));
 			internal.launchExportDialog()
 		}
-	}  
+	}
 }
