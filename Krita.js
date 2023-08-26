@@ -120,11 +120,14 @@ KritaExporter.prototype = {
           var channelFormat = alg.mapexport.channelFormat([this.materialName, this.stackName],this.channel)
           var bitDepth = alg.settings.value("bitDepth", -1)
           this.exportConfig.bitDepth = bitDepth == -1 ? channelFormat.bitDepth : bitDepth
+          
           //PNG export of a channel snapshot into the path export
-          var filename = this.createFilename(".png");
-          var exportConfig = this.exportConfig.clone()
-          exportConfig.keepAlpha = false
-          alg.mapexport.save([this.materialName, this.stackName, this.channel], filename, exportConfig);
+          //this exports the snapshot of the channel into 1 file
+          //TODO: Make this a configurable option
+          //var filename = this.createFilename(".png");
+          //var exportConfig = this.exportConfig.clone()
+          //exportConfig.keepAlpha = false
+          //alg.mapexport.save([this.materialName, this.stackName, this.channel], filename, exportConfig);
           
           //get export width and height
           var resolution = alg.mapexport.textureSetResolution(this.materialName);
