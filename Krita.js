@@ -165,7 +165,6 @@ KritaExporter.prototype = {
 
           //set color space
           if(this.channel == "basecolor" || this.channel == "diffuse" || this.channel == "specular" || this.channel == "emissive" || this.channel == "transmissive" ) {
-            //this.kritaScript += tab + "doc.setColorProfile(\"scRGB (linear)\")\n";
             this.kritaScript += tab + "doc.setColorSpace(\"RGBA\", \"U8\", \"scRGB (linear)\")\n";
           }
 
@@ -191,10 +190,10 @@ KritaExporter.prototype = {
    */
   layersDFS: function(layer, parentNode, progress, self) {
     //The layer is a leaf
+    //TODO: Add option to skip layers that are disabled
     if (layer.layers == undefined) {
       //export individual layer
       var filename = this.createFilename("_" + layer.uid + ".png");
-      //TODO: Will need to determine if a layer image is a fill layer or not manually, there does not seem to be a built in endpoint for this in substance :()
 
       alg.mapexport.save([layer.uid, this.channel], filename, this.exportConfig);
       var blending = alg.mapexport.layerBlendingModes(layer.uid)[this.channel];
@@ -202,6 +201,11 @@ KritaExporter.prototype = {
 
       //add file layer
       this.kritaScript += tab + "layer = addFileLayer(doc," + parentNode + ",\"" + filename + "\",\"" + layer.name + "\"," + kritaOpacity + ",\"" + this.convertBlendingMode(blending.mode, 0) + "\")\n";
+
+      //set its visibility
+      if (layer.enabled == false) {
+        this.kritaScript += tab + "layer.setVisible(False)\n";
+      }
 
       updateProgress();
       //Add mask if exist
@@ -217,6 +221,12 @@ KritaExporter.prototype = {
 
       //Create the folder into photoshop
       this.kritaScript += tab + "node_" + layer.uid + " = addGroupLayer(doc," + parentNode + ",\"" + layer.name + "\"," + kritaOpacity + ",\"" + this.convertBlendingMode(blending.mode, 0) + "\")\n";
+      
+      //set its visibility
+      if (layer.enabled == false) {
+        this.kritaScript += tab + "node_" + layer.uid + ".setVisible(False)\n";
+      }
+
       //Add mask if exist
       if (layer.hasMask == true) {
         this.addMask(layer);
