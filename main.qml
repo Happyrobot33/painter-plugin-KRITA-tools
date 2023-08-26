@@ -41,6 +41,19 @@ PainterPlugin {
 			progressText.text = text
 		}
 
+		function updateProgressBar(value, max) {
+			//print all properties of the object
+			/*
+			for (var property in progressBar) {
+				alg.log.info(property + ": " + progressBar[property]);
+			}
+			*/
+			progressBar.indeterminate = false
+			progressBar.from = 0
+			progressBar.to = max
+			progressBar.value = value
+		}
+
 		function launchExportDialog() {
 			exportDialog.open()
 		}
@@ -49,7 +62,7 @@ PainterPlugin {
 			try {
 				loading = true;
 				progressWindow.open()
-				Krita.importPainterDocument(updateProgressWindow);
+				Krita.importPainterDocument(updateProgressWindow, updateProgressBar);
 			}
 			catch (e) {
 				alg.log.warn(e.message)
@@ -131,7 +144,7 @@ PainterPlugin {
 
 	FileDialog {
 		id: fileDialog
-		title: qsTr("Please locate Krita...")
+		title: qsTr("Please locate KritaRunner...")
 		nameFilters: [ "Krita files (*.exe *.app)", "All files (*)" ]
 		selectedNameFilter: "Executable files (*)"
 		onAccepted: {

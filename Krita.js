@@ -82,7 +82,7 @@ KritaExporter.prototype = {
         var stackPath = material.name + "." + stack.name
         if (!mapsList.isChecked(stackPath)) continue
         //a layer might be a group, in which case we need to count all the layers in the group
-        totalLayers += elementNbLayers(stack);
+        totalLayers += elementNbLayers(stack) * stackNbChannel(material.name, stack);
       }
     }
     //this needs to be accessible to the layersDFS function
@@ -186,7 +186,8 @@ KritaExporter.prototype = {
 
       progress.value++;
       alg.log.info("Progress: " + progress.value + "/" + progress.total);
-      self.logUserInfo("Exporting " + progress.value + "/" + progress.total + " (" + Math.round(progress.value/progress.total*100) + "%) layers to Krita");
+      self.logProgressText("Exporting " + progress.value + "/" + progress.total + " (" + Math.round(progress.value/progress.total*100) + "%) layers to Krita");
+      self.logProgress(progress.value, progress.total);
       //Add mask if exist
       if (layer.hasMask == true) {
         this.addMask(layer);
@@ -282,14 +283,24 @@ KritaExporter.prototype = {
 
 }
 
-function KritaExporter(callback) {
-  this.logUserInfo =
-    function logUserInfo(str) {
-      if (callback) {
-        callback(str)
+function KritaExporter(ptext, pbar) {
+  this.logProgressText =
+    function logProgressText(str) {
+      if (ptext) {
+        ptext(str)
       }
       else {
         alg.log.info("<font color=#00FF00>"+str+"</font>")
+      }
+    }
+
+  this.logProgress =
+    function logProgress(value, total) {
+      if (pbar) {
+        pbar(value, total)
+      }
+      else {
+        alg.log.info("<font color=#00FF00>"+value+"/"+total+"</font>")
       }
     }
 
@@ -325,9 +336,9 @@ function KritaExporter(callback) {
     return;
   }
 
-  this.logUserInfo("Export done");
+  this.logProgressText("Export done");
   if (alg.settings.value("launchKrita", false)) {
-    this.logUserInfo("Starting Krita...");
+    this.logProgressText("Starting Krita...");
     if (Qt.platform.os == "windows") {
       alg.subprocess.startDetached(["\"" + "C:/Program Files/Krita (x64)/bin/kritarunner.exe"  + "\"", "-s", "runner"]);
       //alg.subprocess.startDetached(["\"" + alg.settings.value("photoshopPath", "") + "\"", "\"" + this.exportPath.split('/').join('\\') + "photoshopScript.jsx\""]);
@@ -335,6 +346,6 @@ function KritaExporter(callback) {
   }
 }
 
-function importPainterDocument(callback) {
-  new KritaExporter(callback);
+function importPainterDocument(ptext, pbar) {
+  new KritaExporter(ptext, pbar);
 }

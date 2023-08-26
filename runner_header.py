@@ -6,6 +6,7 @@ import sys
 import os
 import io
 from PIL import Image
+import traceback
 
 def addFileLayer(doc, node, path, layerName, opacity, blendmode):
     #double the forward slashes
@@ -33,9 +34,13 @@ def addFileLayer(doc, node, path, layerName, opacity, blendmode):
         colors = file.getcolors(2)
         color = file.getcolors(2)[0][1]
         if colors[0][1] == (0, 0, 0, 0) or colors[0][1] == (0, 0, 0, 255):
-            color = colors[1][1]
-            #quick check to make sure the image isnt ONLY black
-            if colors[1][1] == (0, 0, 0, 0) or colors[1][1] == (0, 0, 0, 255):
+            #check if there is a second color
+            if len(colors) > 1:
+                color = colors[1][1]
+                #quick check to make sure the image isnt ONLY black
+                if colors[1][1] == (0, 0, 0, 0) or colors[1][1] == (0, 0, 0, 255):
+                    color = colors[0][1]
+            else:
                 color = colors[0][1]
 
         file.paste(color, (0, 0, doc.width(), doc.height()))
@@ -126,6 +131,8 @@ class Window(QWidget):
     def updateProgress(self, progress, message):
         self.pbar.setValue(progress)
         self.pbar.setFormat(message)
+        #repaint the window
+        self.repaint()
     
     def setTotalProgress(self, progress):
         self.pbar.setMaximum(progress)
