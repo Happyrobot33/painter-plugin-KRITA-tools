@@ -69,22 +69,38 @@ KritaExporter.prototype = {
       return nbLayers + (element.hasMask? 1 : 0);
     }
 
+    function totalCheckedLayers(document) {
+      // Calculate the total number of checked stacks in the document
+      var totalStacks = documentNbStacks(document);
+    
+      // Initialize a variable to keep track of the total checked layers
+      var totalCheckedLayers = 0;
+    
+      // Iterate through each material in the document
+      document.materials.forEach(function(material) {
+        // Iterate through each stack in the material
+        material.stacks.forEach(function(stack) {
+          // Calculate the number of checked channels in the stack
+          var checkedChannels = stackNbChannel(material.name, stack);
+    
+          // Calculate the number of layers in the stack
+          var layersInStack = elementNbLayers(stack);
+    
+          // Add the product of checked channels and layers in the stack to the total
+          totalCheckedLayers += checkedChannels * layersInStack;
+        });
+      });
+    
+      return totalCheckedLayers;
+    }
+
     var self = this;
     var doc_str = alg.mapexport.documentStructure();
 
     //total up all selected layers
-    var totalLayers = 0;
-    for (var materialId in doc_str.materials) {
-      var material = doc_str.materials[materialId];
-      if (!mapsList.isChecked(material.name)) continue
-      for (var stackId in material.stacks) {
-        var stack = material.stacks[stackId];
-        var stackPath = material.name + "." + stack.name
-        if (!mapsList.isChecked(stackPath)) continue
-        //a layer might be a group, in which case we need to count all the layers in the group
-        totalLayers += elementNbLayers(stack) * stackNbChannel(material.name, stack);
-      }
-    }
+    var totalLayers = totalCheckedLayers(doc_str);
+    alg.log.info("Total layers: " + totalLayers);
+    //return;
     //this needs to be accessible to the layersDFS function
     //on value set, run
     //self.logUserInfo("Exporting " + value + "/" totalLayers + " (" + percent + "%) layers to Krita");
@@ -187,12 +203,10 @@ KritaExporter.prototype = {
       //add file layer
       this.kritaScript += tab + "layer = addFileLayer(doc," + parentNode + ",\"" + filename + "\",\"" + layer.name + "\"," + kritaOpacity + ",\"" + this.convertBlendingMode(blending.mode, 0) + "\")\n";
 
-      progress.value++;
-      alg.log.info("Progress: " + progress.value + "/" + progress.total);
-      self.logProgressText("Exporting " + progress.value + "/" + progress.total + " (" + Math.round(progress.value/progress.total*100) + "%) layers to Krita");
-      self.logProgress(progress.value, progress.total);
+      updateProgress();
       //Add mask if exist
       if (layer.hasMask == true) {
+        updateProgress();
         this.addMask(layer);
       }
     }
@@ -211,6 +225,13 @@ KritaExporter.prototype = {
       for (var layerId = 0; layerId < layer.layers.length; ++layerId) {
         this.layersDFS(layer.layers[layerId], "node_" + layer.uid, progress, self);
       }
+    }
+
+    function updateProgress() {
+      progress.value++;
+      alg.log.info("Progress: " + progress.value + "/" + progress.total);
+      self.logProgressText("Exporting " + progress.value + "/" + progress.total + " (" + Math.round(progress.value / progress.total * 100) + "%) layers to Krita");
+      self.logProgress(progress.value, progress.total);
     }
   },
 
