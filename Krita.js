@@ -68,8 +68,32 @@ KritaExporter.prototype = {
       }
       return nbLayers + (element.hasMask? 1 : 0);
     }
+
     var self = this;
     var doc_str = alg.mapexport.documentStructure();
+
+    //total up all selected layers
+    var totalLayers = 0;
+    for (var materialId in doc_str.materials) {
+      var material = doc_str.materials[materialId];
+      if (!mapsList.isChecked(material.name)) continue
+      for (var stackId in material.stacks) {
+        var stack = material.stacks[stackId];
+        var stackPath = material.name + "." + stack.name
+        if (!mapsList.isChecked(stackPath)) continue
+        //a layer might be a group, in which case we need to count all the layers in the group
+        totalLayers += elementNbLayers(stack);
+      }
+    }
+    //this needs to be accessible to the layersDFS function
+    //on value set, run
+    //self.logUserInfo("Exporting " + value + "/" totalLayers + " (" + percent + "%) layers to Krita");
+    var progress = {
+      value: 0,
+      total: totalLayers
+    }
+
+    alg.log.info("Exporting " + totalLayers + " layers to Krita");
 
     //Browse material
     for (var materialId in doc_str.materials) {
@@ -115,7 +139,7 @@ KritaExporter.prototype = {
           this.kritaScript += tab + "window.setTotalProgress(" + stack.layers.length + ")\n";
           
           for (var layerId = 0; layerId < stack.layers.length; ++layerId) {
-            this.layersDFS(stack.layers[layerId], "root");
+            this.layersDFS(stack.layers[layerId], "root", progress, self);
             //Update the progress bar
             this.kritaScript += tab + "window.updateProgress(" + layerId + ",\"" + this.materialName + "_" + this.stackName + "_" + this.channel + "_" + layerId + "\")\n";
           }
@@ -146,7 +170,7 @@ KritaExporter.prototype = {
    * Leaf has exported as photoshop layer
    * Folder has exported as photoshop groupe
    */
-  layersDFS: function(layer, parentNode) {
+  layersDFS: function(layer, parentNode, progress, self) {
     //The layer is a leaf
     if (layer.layers == undefined) {
       //export individual layer
@@ -160,6 +184,9 @@ KritaExporter.prototype = {
       //add file layer
       this.kritaScript += tab + "layer = addFileLayer(doc," + parentNode + ",\"" + filename + "\",\"" + layer.name + "\"," + kritaOpacity + ",\"" + this.convertBlendingMode(blending.mode, 0) + "\")\n";
 
+      progress.value++;
+      alg.log.info("Progress: " + progress.value + "/" + progress.total);
+      self.logUserInfo("Exporting " + progress.value + "/" + progress.total + " (" + Math.round(progress.value/progress.total*100) + "%) layers to Krita");
       //Add mask if exist
       if (layer.hasMask == true) {
         this.addMask(layer);
@@ -178,7 +205,7 @@ KritaExporter.prototype = {
       }
       //Browse layer tree from the current layer
       for (var layerId = 0; layerId < layer.layers.length; ++layerId) {
-        this.layersDFS(layer.layers[layerId], "node_" + layer.uid);
+        this.layersDFS(layer.layers[layerId], "node_" + layer.uid, progress, self);
       }
     }
   },
