@@ -150,8 +150,13 @@ KritaExporter.prototype = {
           var exportWidth = resolution[0];
           var exportHeight = resolution[1];
 
+          var kritaBitDepth = "U8";
+          if (this.exportConfig.bitDepth == 16) {
+            kritaBitDepth = "U16";
+          }
+
           //add new document
-          this.kritaScript += tab + "doc = Krita.instance().createDocument(" + exportWidth + ", " + exportHeight + ", \"" + this.materialName + "_" + this.stackName + "_" + this.channel + "\"," + "\"RGBA\"," + "\"U8\"," + "\"\", 0)\n";
+          this.kritaScript += tab + "doc = Krita.instance().createDocument(" + exportWidth + ", " + exportHeight + ", \"" + this.materialName + "_" + this.stackName + "_" + this.channel + "\"," + "\"RGBA\"," + "\"" + kritaBitDepth + "\"," + "\"\", 0)\n";
           this.kritaScript += tab + "root = doc.rootNode()\n";
           
           //set total layers
@@ -362,7 +367,11 @@ function KritaExporter(ptext, pbar) {
   footerScript.close();
 
   try{
-    var scriptFile = alg.fileIO.open("C://Users//Matthew//AppData//Roaming//kritarunner" + "/runner.py", 'w');
+    var appdata = StandardPaths.standardLocations(StandardPaths.HomeLocation)[0];
+    //remove file:///
+    appdata = appdata.substring(8);
+    alg.log.info("appdata: " + appdata);
+    var scriptFile = alg.fileIO.open(appdata + "/AppData/Roaming/kritarunner" + "/runner.py", 'w');
     scriptFile.write(this.kritaScript);
     scriptFile.close();
   } catch (error) {
@@ -374,7 +383,8 @@ function KritaExporter(ptext, pbar) {
   if (alg.settings.value("launchKrita", false)) {
     this.logProgressText("Starting Krita...");
     if (Qt.platform.os == "windows") {
-      alg.subprocess.startDetached(["\"" + "C:/Program Files/Krita (x64)/bin/kritarunner.exe"  + "\"", "-s", "runner"]);
+      //alg.subprocess.startDetached(["\"" + "C:/Program Files/Krita (x64)/bin/kritarunner.exe"  + "\"", "-s", "runner"]);
+      alg.subprocess.startDetached(["\"" + alg.settings.value("kritaPath")  + "\"", "-s", "runner"]);
       //alg.subprocess.startDetached(["\"" + alg.settings.value("photoshopPath", "") + "\"", "\"" + this.exportPath.split('/').join('\\') + "photoshopScript.jsx\""]);
     }
   }

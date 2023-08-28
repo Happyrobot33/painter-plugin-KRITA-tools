@@ -57,7 +57,7 @@ AlgDialog {
           Layout.fillWidth: true
 
           AlgLabel {
-            text: qsTr("Path to Krita")
+            text: qsTr("Path to KritaRunner")
             Layout.fillWidth: true
           }
 
@@ -97,7 +97,7 @@ AlgDialog {
           Layout.fillWidth: true
 
           AlgLabel {
-            text: qsTr("Launch Krita after export")
+            text: qsTr("Launch KritaRunner after export")
             Layout.fillWidth: true
           }
 

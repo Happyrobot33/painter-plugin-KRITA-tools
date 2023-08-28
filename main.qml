@@ -4,6 +4,7 @@ import QtQuick.Layouts 1.2
 import QtQuick.Dialogs 1.0
 import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.4
+import Qt.labs.platform 1.1
 import AlgWidgets 2.0
 import AlgWidgets.Style 2.0
 
@@ -146,7 +147,7 @@ PainterPlugin {
 		id: fileDialog
 		title: qsTr("Please locate KritaRunner...")
 		nameFilters: [ "Krita files (*.exe *.app)", "All files (*)" ]
-		selectedNameFilter: "Executable files (*)"
+		//selectedNameFilter: "Executable files (*)"
 		onAccepted: {
 			alg.settings.setValue("KritaPath", alg.fileIO.urlToLocalFile(fileUrl.toString()));
 			internal.launchExportDialog()
