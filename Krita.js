@@ -370,7 +370,6 @@ function KritaExporter(ptext, pbar) {
     var appdata = StandardPaths.standardLocations(StandardPaths.HomeLocation)[0];
     //remove file:///
     appdata = appdata.substring(8);
-    alg.log.info("appdata: " + appdata);
     var scriptFile = alg.fileIO.open(appdata + "/AppData/Roaming/kritarunner" + "/runner.py", 'w');
     scriptFile.write(this.kritaScript);
     scriptFile.close();
