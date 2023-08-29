@@ -137,7 +137,7 @@ KritaExporter.prototype = {
     //set total files, which is the total number of checked channels
     this.kritaScript += tab + "window.setTotalProgress(" + totalCheckedChannels(doc_str) + ", \"total\")\n";
     //keep track of a variable for the progress
-    var channelProgress = 0;
+    var channelProgress = 1;
 
     //Browse material
     for (var materialId in doc_str.materials) {
@@ -189,16 +189,28 @@ KritaExporter.prototype = {
           this.kritaScript += tab + "doc = Krita.instance().createDocument(" + exportWidth + ", " + exportHeight + ", \"" + this.materialName + "_" + this.stackName + "_" + this.channel + "\"," + "\"RGBA\"," + "\"" + kritaBitDepth + "\"," + "\"\", 0)\n";
           this.kritaScript += tab + "root = doc.rootNode()\n";
           this.kritaScript += tab + "window.updateProgress(" + channelProgress + ",\"" + this.materialName + "_" + this.stackName + "_" + this.channel + "\", \"total\")\n";
+          //Get rid of the very first layer named "Background" that is created by default
+          this.kritaScript += tab + "root.removeChildNode(root.childNodes()[0])\n";
           
           //set total layers
           this.kritaScript += tab + "window.setTotalProgress(" + stack.layers.length + ", \"individual\")\n";
           
-          // Add default background in normal channel
+          // Add default background based on channel
           if(this.channel === "normal") {
-            this.kritaScript += tab + "createBackground(doc, root, (128, 128, 255, 255))\n";
+            this.kritaScript += tab + "doc.setBackgroundColor(QColor(128, 128, 255, 255))\n";
+          }
+          else if(this.channel === "height") {
+            this.kritaScript += tab + "doc.setBackgroundColor(QColor(255, 255, 255, 128))\n";
+          }
+          else if(this.channel === "roughness") {
+            //TODO: Find out if this is actually the default roughness value
+            var roughness = 255 * 0.3;
+            //round to int
+            roughness = Math.round(roughness);
+            this.kritaScript += tab + "doc.setBackgroundColor(QColor(" + roughness + ", " + roughness + ", " + roughness + ", 255))\n";
           }
           else {
-            this.kritaScript += tab + "createBackground(doc, root, (0, 0, 0, 255))\n";
+            this.kritaScript += tab + "doc.setBackgroundColor(QColor(0, 0, 0, 0))\n";
           }
           
           for (var layerId = 0; layerId < stack.layers.length; ++layerId) {
@@ -206,10 +218,11 @@ KritaExporter.prototype = {
             //Update the progress bar
             this.kritaScript += tab + "window.updateProgress(" + layerId + ",\"" + this.materialName + "_" + this.stackName + "_" + this.channel + "_" + layerId + "\", \"individual\")\n";
           }
-
+          
           //set color space
           if(this.channel == "basecolor" || this.channel == "diffuse" || this.channel == "specular" || this.channel == "emissive" || this.channel == "transmissive" ) {
             this.kritaScript += tab + "doc.setColorSpace(\"RGBA\", \"U8\", \"scRGB (linear)\")\n";
+            this.kritaScript += tab + "doc.setBackgroundColor(QColor(0, 0, 0, 255))\n";
           }
 
           //run difference check

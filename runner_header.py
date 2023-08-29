@@ -79,24 +79,6 @@ def addFileLayer(doc, node, path, layerName, opacity, blendmode):
     os.remove(path)
     return layer
 
-#generate the background for normal maps
-#R:128 G:128 B:255
-def createBackground(doc, node, color):
-    #create a PIL image
-    background = Image.new("RGBA", (doc.width(), doc.height()), color)
-    b, g, r, a = background.split()
-    im = Image.merge("RGBA", (r, g, b, a))
-
-    ba = bytearray(im.tobytes())
-
-    #create a new layer
-    layer = doc.createNode("Background", "paintlayer")
-
-    layer.setPixelData(ba, 0, 0, doc.width(), doc.height())
-
-    node.addChildNode(layer, None)
-    return layer
-
 def addGroupLayer(doc, node, layerName, opacity, blendmode):
     layer = doc.createGroupLayer(layerName)
     layer.setBlendingMode(blendmode)
