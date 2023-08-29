@@ -163,6 +163,9 @@ class Window(QWidget):
   
         # setting window action
         self.setWindowTitle("Substance Painter Krita Exporter")
+
+        # setting window icon
+        self.setWindowIcon(QIcon("icons/Krita_idle.png"))
   
         # showing all the widgets
         self.show()
