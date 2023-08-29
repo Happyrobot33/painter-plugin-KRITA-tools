@@ -370,7 +370,8 @@ function KritaExporter(ptext, pbar) {
     var appdata = StandardPaths.standardLocations(StandardPaths.HomeLocation)[0];
     //remove file:///
     appdata = appdata.substring(8);
-    var scriptFile = alg.fileIO.open(appdata + "/AppData/Roaming/kritarunner" + "/runner.py", 'w');
+    var kritarunnerFolder = appdata + "/AppData/Roaming/kritarunner";
+    var scriptFile = alg.fileIO.open(kritarunnerFolder + "/runner.py", 'w');
     scriptFile.write(this.kritaScript);
     scriptFile.close();
   } catch (error) {
@@ -385,6 +386,14 @@ function KritaExporter(ptext, pbar) {
       //alg.subprocess.startDetached(["\"" + "C:/Program Files/Krita (x64)/bin/kritarunner.exe"  + "\"", "-s", "runner"]);
       alg.subprocess.startDetached(["\"" + alg.settings.value("kritaPath")  + "\"", "-s", "runner"]);
       //alg.subprocess.startDetached(["\"" + alg.settings.value("photoshopPath", "") + "\"", "\"" + this.exportPath.split('/').join('\\') + "photoshopScript.jsx\""]);
+    }
+  }
+
+  function sleep(ms) {
+    var start = new Date().getTime();
+    var end = start;
+    while (end < start + ms) {
+      end = new Date().getTime();
     }
   }
 }

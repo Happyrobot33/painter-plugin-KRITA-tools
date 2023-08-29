@@ -23,6 +23,16 @@ PainterPlugin {
 		}
 		var sendtoAction = alg.ui.addAction(alg.ui.AppMenu.SendTo, qsTr("Export to Krita"), qsTr("Export to Krita"), Qt.resolvedUrl("icons/Krita_idle.png"), Qt.resolvedUrl("icons/Krita_idle.png"));
 		sendtoAction.triggered.connect(internal.sendToTriggered);
+
+		//check if kritarunner folder exists
+		var appdata = StandardPaths.standardLocations(StandardPaths.HomeLocation)[0];
+		//remove file:///
+		appdata = appdata.substring(8);
+		var kritarunnerFolder = appdata + "/AppData/Roaming/kritarunner";
+		if (!alg.fileIO.exists(kritarunnerFolder)) {
+			alg.log.info("Running Kritarunner for the first time");
+			alg.subprocess.startDetached(["\"" + alg.settings.value("kritaPath")  + "\"", "-s", "runner"]);
+		}
 	}
 
 	onConfigure: {
