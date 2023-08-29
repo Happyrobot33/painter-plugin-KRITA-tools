@@ -21,7 +21,7 @@ PainterPlugin {
 		 	}
 		 	alg.settings.setValue("padding", false);
 		}
-		var sendtoAction = alg.ui.addAction(alg.ui.AppMenu.SendTo, qsTr("Export to Krita"), qsTr("Export to Krita"), Qt.resolvedUrl("icons/Photoshop_idle.svg"), Qt.resolvedUrl("icons/Photoshop_idle.svg"));
+		var sendtoAction = alg.ui.addAction(alg.ui.AppMenu.SendTo, qsTr("Export to Krita"), qsTr("Export to Krita"), Qt.resolvedUrl("icons/Krita_idle.png"), Qt.resolvedUrl("icons/Krita_idle.png"));
 		sendtoAction.triggered.connect(internal.sendToTriggered);
 	}
 
