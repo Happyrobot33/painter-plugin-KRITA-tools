@@ -165,8 +165,10 @@ KritaExporter.prototype = {
           
           // Add default background in normal channel
           if(this.channel === "normal") {
-            this.kritaScript += tab + "createNormalBackground(doc, root)\n";
-            //this.kritaScript += this.newFillLayerStr("Background", {R:128, G:128, B:255});
+            this.kritaScript += tab + "createBackground(doc, root, (128, 128, 255, 255))\n";
+          }
+          else {
+            this.kritaScript += tab + "createBackground(doc, root, (0, 0, 0, 255))\n";
           }
           
           for (var layerId = 0; layerId < stack.layers.length; ++layerId) {
