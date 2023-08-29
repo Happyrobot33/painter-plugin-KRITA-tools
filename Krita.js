@@ -216,7 +216,7 @@ KritaExporter.prototype = {
       //Add mask if exist
       if (layer.hasMask == true) {
         updateProgress();
-        this.addMask(layer);
+        this.addMask(layer, "layer");
       }
     }
     //The layer is a folder
@@ -234,7 +234,7 @@ KritaExporter.prototype = {
 
       //Add mask if exist
       if (layer.hasMask == true) {
-        this.addMask(layer);
+        this.addMask(layer, "node_" + layer.uid);
       }
       //Browse layer tree from the current layer
       for (var layerId = 0; layerId < layer.layers.length; ++layerId) {
@@ -253,12 +253,12 @@ KritaExporter.prototype = {
   /*
    * Add the layer/folder mask if exist
    */
-  addMask: function(layer) {
+  addMask: function(layer, parentNodeName) {
     //PNG export of the mask into the path export
     var filename = this.createFilename("_" + layer.uid + "_mask.png");
     alg.mapexport.save([layer.uid, "mask"], filename, this.exportConfig);
     //Create the mask into photoshop
-    this.kritaScript += tab + "addTransparencyMask(doc, layer, \"" + filename + "\")\n";
+    this.kritaScript += tab + "addTransparencyMask(doc, " + parentNodeName + ",\"" + filename + "\")\n";
   },
 
   /**********Photoshop generation script**********/
