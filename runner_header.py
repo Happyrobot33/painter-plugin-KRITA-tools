@@ -6,6 +6,9 @@ import sys
 import os
 import io
 from PIL import Image
+from PIL import ImageChops
+from PIL import ImageStat
+from PIL import ImageMath
 import traceback
 
 def addFileLayer(doc, node, path, layerName, opacity, blendmode):
@@ -15,9 +18,10 @@ def addFileLayer(doc, node, path, layerName, opacity, blendmode):
     layer = doc.createNode(layerName, "paintlayer")
     #get the pixel information of the file
     file = Image.open(path)
+    #get the bit depth of the document
+    bitDepth = doc.colorDepth()
     #convert to RGBA to make sure it has an alpha channel
     file = file.convert("RGBA")
-
 
     #This is a great hack to determine if a layer is a fill layer
     #essentially, getcolors will return none if the image has more than 2 colors in it
@@ -75,6 +79,24 @@ def addFileLayer(doc, node, path, layerName, opacity, blendmode):
     os.remove(path)
     return layer
 
+#generate the background for normal maps
+#R:128 G:128 B:255
+def createNormalBackground(doc, node):
+    #create a PIL image
+    background = Image.new("RGBA", (doc.width(), doc.height()), (128, 128, 255, 255))
+    b, g, r, a = background.split()
+    im = Image.merge("RGBA", (r, g, b, a))
+
+    ba = bytearray(im.tobytes())
+
+    #create a new layer
+    layer = doc.createNode("Background2", "paintlayer")
+
+    layer.setPixelData(ba, 0, 0, doc.width(), doc.height())
+
+    node.addChildNode(layer, None)
+    return layer
+
 def addGroupLayer(doc, node, layerName, opacity, blendmode):
     layer = doc.createGroupLayer(layerName)
     layer.setBlendingMode(blendmode)
@@ -102,6 +124,38 @@ def addTransparencyMask(doc, layer, path):
     #delete the original image at the path
     os.remove(path)
     return mask
+
+#this runs once we are complete with a file
+#This is to check for differences between the snapshot and the generated file,
+#mainly to ensure that geometry masks were not used as we dont get that information
+def checkForDifferences(doc, kraImagePath, snapshotImagePath):
+    #load the snapshot image
+    snapshot = Image.open(snapshotImagePath)
+
+    #save a copy of the generated image to a png
+    exportDocAsPNG(doc, kraImagePath, "generated")
+
+    #load the generated image
+    generated = Image.open(kraImagePath + "generated.png")
+
+    #remove alpha channel from both since this is broken
+    snapshot = snapshot.convert("RGB")
+    generated = generated.convert("RGB")
+
+    #check the difference between the two
+    diff = ImageChops.difference(snapshot, generated)
+
+    #delete the two images we created since we dont need them anymore
+    os.remove(kraImagePath + "generated.png")
+    os.remove(snapshotImagePath)
+
+    #get percentile difference between the two
+    stat = ImageStat.Stat(diff)
+    diff_percent = sum(stat.mean) / (len(stat.mean) * 255) * 100
+    
+    #if the difference is greater than a set point, we have a problem
+    if diff_percent > 5:
+        QMessageBox.information(None, "Error", "The generated image is not the same as the snapshot. Make sure you are not using geometry masks, as these are un-exportable due to substance painter limitations.")
 
 class Window(QWidget):
   
@@ -147,6 +201,14 @@ def close(doc, name, path):
     doc.saveAs(path + name + ".kra")
     #close the file
     doc.close()
+
+def exportDocAsPNG(doc, path, name):
+    #double the forward slashes
+    path = path.replace("/", "//")
+    #save the file
+    doc.setBatchmode(True)
+    #export to png
+    doc.saveAs(path + name + ".png")
 
 def main():
     # create pyqt5 app

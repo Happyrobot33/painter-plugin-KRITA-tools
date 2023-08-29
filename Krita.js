@@ -140,27 +140,34 @@ KritaExporter.prototype = {
           //PNG export of a channel snapshot into the path export
           //this exports the snapshot of the channel into 1 file
           //TODO: Make this a configurable option
-          //var filename = this.createFilename(".png");
-          //var exportConfig = this.exportConfig.clone()
-          //exportConfig.keepAlpha = false
-          //alg.mapexport.save([this.materialName, this.stackName, this.channel], filename, exportConfig);
+          var filename = this.createFilename(".png");
+          var exportConfig = this.exportConfig.clone()
+          exportConfig.keepAlpha = false
+          alg.mapexport.save([this.materialName, this.stackName, this.channel], filename, exportConfig);
           
           //get export width and height
           var resolution = alg.mapexport.textureSetResolution(this.materialName);
           var exportWidth = resolution[0];
           var exportHeight = resolution[1];
-
+          
           var kritaBitDepth = "U8";
-          if (this.exportConfig.bitDepth == 16) {
-            kritaBitDepth = "U16";
-          }
-
+          //TODO: Figure out why the PIL library doesnt support 16 bit images
+          //if (this.exportConfig.bitDepth == 16) {
+          //  kritaBitDepth = "U16";
+          //}
+          
           //add new document
           this.kritaScript += tab + "doc = Krita.instance().createDocument(" + exportWidth + ", " + exportHeight + ", \"" + this.materialName + "_" + this.stackName + "_" + this.channel + "\"," + "\"RGBA\"," + "\"" + kritaBitDepth + "\"," + "\"\", 0)\n";
           this.kritaScript += tab + "root = doc.rootNode()\n";
           
           //set total layers
           this.kritaScript += tab + "window.setTotalProgress(" + stack.layers.length + ")\n";
+          
+          // Add default background in normal channel
+          if(this.channel === "normal") {
+            this.kritaScript += tab + "createNormalBackground(doc, root)\n";
+            //this.kritaScript += this.newFillLayerStr("Background", {R:128, G:128, B:255});
+          }
           
           for (var layerId = 0; layerId < stack.layers.length; ++layerId) {
             this.layersDFS(stack.layers[layerId], "root", progress, self);
@@ -173,16 +180,12 @@ KritaExporter.prototype = {
             this.kritaScript += tab + "doc.setColorSpace(\"RGBA\", \"U8\", \"scRGB (linear)\")\n";
           }
 
+          //run difference check
+          //def checkForDifferences(doc, kraImagePath, snapshotImagePath):
+          this.kritaScript += tab + "checkForDifferences(doc, \"" + this.exportPath + "\", \"" + filename + "\")\n";
+
           //close document
           this.kritaScript += tab + "close(doc, " + "\"" + this.materialName + "_" + this.stackName + "_" + this.channel + "\",\"" + this.exportPath + "\")\n";
-          
-          /*
-          // Add default background in normal channel
-          if(this.channel === "normal") {
-            this.kritaScript += this.newFillLayerStr("Background", {R:128, G:128, B:255});
-            this.kritaScript += "app.activeDocument.activeLayer.move(app.activeDocument, ElementPlacement.PLACEATEND); \n";
-          }
-          */
         }
       }
     }
@@ -305,6 +308,9 @@ KritaExporter.prototype = {
     case "Color":                        blendingMode = "color"; break;
     case "Value":                        blendingMode = "value"; break;
     //case "Normal map combine":           blendingMode = "Overlay_Normal()"; break;
+    case "Normal map combine":           blendingMode = "overlay"; break;
+    case "Normal map detail":           blendingMode = "overlay"; break;
+    case "Normal map inverse detail":           blendingMode = "overlay"; break;
     //case "Normal map detail":            blendingMode = "Overlay_Normal()"; break;
     //case "Normal map inverse detail":    blendingMode = "Overlay_Normal()"; break;
     case "Disable":
