@@ -168,30 +168,39 @@ class Window(QWidget):
     # method for creating widgets
     def initUI(self):
   
-        # creating progress bar
-        self.pbar = QProgressBar(self)
-  
-        # setting its geometry
-        self.pbar.setGeometry(30, 40, 200, 25)
+        # create individual progress bar
+        self.pbarindividual = QProgressBar(self)
+        self.pbarindividual.setGeometry(30, 80, 200, 25)
+
+        # create total progress bar
+        self.pbartotal = QProgressBar(self)
+        self.pbartotal.setGeometry(30, 40, 200, 25)
   
         # setting window geometry
         self.setGeometry(300, 300, 280, 170)
   
         # setting window action
-        self.setWindowTitle("Python")
+        self.setWindowTitle("Substance Painter Krita Exporter")
   
         # showing all the widgets
         self.show()
 
     #update the progress bar
-    def updateProgress(self, progress, message):
-        self.pbar.setValue(progress)
-        self.pbar.setFormat(message)
-        #repaint the window
-        self.repaint()
+    def updateProgress(self, progress, message, bar):
+        if bar == "individual":
+            self.pbarindividual.setValue(progress)
+            self.pbarindividual.setFormat(message)
+        elif bar == "total":
+            self.pbartotal.setValue(progress)
+            self.pbartotal.setFormat(message)
+        #call to process events
+        QApplication.processEvents()
     
-    def setTotalProgress(self, progress):
-        self.pbar.setMaximum(progress)
+    def setTotalProgress(self, progress, bar):
+        if bar == "individual":
+            self.pbarindividual.setMaximum(progress)
+        elif bar == "total":
+            self.pbartotal.setMaximum(progress)
 
 def close(doc, name, path):
     #double the forward slashes

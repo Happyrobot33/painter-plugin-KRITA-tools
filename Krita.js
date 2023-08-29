@@ -94,6 +94,29 @@ KritaExporter.prototype = {
       return totalCheckedLayers;
     }
 
+    //get total checked channels
+    function totalCheckedChannels(document) {
+      // Calculate the total number of checked stacks in the document
+      var totalStacks = documentNbStacks(document);
+    
+      // Initialize a variable to keep track of the total checked layers
+      var totalCheckedChannels = 0;
+    
+      // Iterate through each material in the document
+      document.materials.forEach(function(material) {
+        // Iterate through each stack in the material
+        material.stacks.forEach(function(stack) {
+          // Calculate the number of checked channels in the stack
+          var checkedChannels = stackNbChannel(material.name, stack);
+    
+          // Add the product of checked channels and layers in the stack to the total
+          totalCheckedChannels += checkedChannels;
+        });
+      });
+    
+      return totalCheckedChannels;
+    }
+
     var self = this;
     var doc_str = alg.mapexport.documentStructure();
 
@@ -110,6 +133,11 @@ KritaExporter.prototype = {
     }
 
     alg.log.info("Exporting " + totalLayers + " layers to Krita");
+    
+    //set total files, which is the total number of checked channels
+    this.kritaScript += tab + "window.setTotalProgress(" + totalCheckedChannels(doc_str) + ", \"total\")\n";
+    //keep track of a variable for the progress
+    var channelProgress = 0;
 
     //Browse material
     for (var materialId in doc_str.materials) {
@@ -125,6 +153,7 @@ KritaExporter.prototype = {
 
         var totalLayers = elementNbLayers(stack);
         this.stackName = stack.name;
+
 
         //Browse channels
         for (var channelId in stack.channels) {
@@ -155,13 +184,14 @@ KritaExporter.prototype = {
           //if (this.exportConfig.bitDepth == 16) {
           //  kritaBitDepth = "U16";
           //}
-          
+            
           //add new document
           this.kritaScript += tab + "doc = Krita.instance().createDocument(" + exportWidth + ", " + exportHeight + ", \"" + this.materialName + "_" + this.stackName + "_" + this.channel + "\"," + "\"RGBA\"," + "\"" + kritaBitDepth + "\"," + "\"\", 0)\n";
           this.kritaScript += tab + "root = doc.rootNode()\n";
+          this.kritaScript += tab + "window.updateProgress(" + channelProgress + ",\"" + this.materialName + "_" + this.stackName + "_" + this.channel + "\", \"total\")\n";
           
           //set total layers
-          this.kritaScript += tab + "window.setTotalProgress(" + stack.layers.length + ")\n";
+          this.kritaScript += tab + "window.setTotalProgress(" + stack.layers.length + ", \"individual\")\n";
           
           // Add default background in normal channel
           if(this.channel === "normal") {
@@ -174,7 +204,7 @@ KritaExporter.prototype = {
           for (var layerId = 0; layerId < stack.layers.length; ++layerId) {
             this.layersDFS(stack.layers[layerId], "root", progress, self);
             //Update the progress bar
-            this.kritaScript += tab + "window.updateProgress(" + layerId + ",\"" + this.materialName + "_" + this.stackName + "_" + this.channel + "_" + layerId + "\")\n";
+            this.kritaScript += tab + "window.updateProgress(" + layerId + ",\"" + this.materialName + "_" + this.stackName + "_" + this.channel + "_" + layerId + "\", \"individual\")\n";
           }
 
           //set color space
@@ -188,6 +218,9 @@ KritaExporter.prototype = {
 
           //close document
           this.kritaScript += tab + "close(doc, " + "\"" + this.materialName + "_" + this.stackName + "_" + this.channel + "\",\"" + this.exportPath + "\")\n";
+
+          //update total progress
+          channelProgress++;
         }
       }
     }
