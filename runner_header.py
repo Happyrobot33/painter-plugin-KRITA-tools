@@ -15,6 +15,8 @@ def addFileLayer(doc, node, path, layerName, opacity, blendmode):
     layer = doc.createNode(layerName, "paintlayer")
     #get the pixel information of the file
     file = Image.open(path)
+    #convert to RGBA to make sure it has an alpha channel
+    file = file.convert("RGBA")
 
 
     #This is a great hack to determine if a layer is a fill layer
