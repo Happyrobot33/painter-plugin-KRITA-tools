@@ -74,6 +74,9 @@ def addFileLayer(doc, node, path, layerName, opacity, blendmode):
     #round the opacity to the nearest 1
     opacity = round(opacity)
     layer.setOpacity(opacity)
+    #if blend mode is a empty string then turn the layer off since it likely wont composite correctly
+    if (blendmode == ""):
+        layer.setVisible(False)
     node.addChildNode(layer, None)
     #delete the original image at the path
     os.remove(path)
