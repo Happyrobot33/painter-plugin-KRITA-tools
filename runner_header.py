@@ -140,7 +140,28 @@ def checkForDifferences(doc, kraImagePath, snapshotImagePath):
     
     #if the difference is greater than a set point, we have a problem
     if diff_percent > 5:
-        QMessageBox.information(None, "Error", "The generated image is not the same as the snapshot. Make sure you are not using geometry masks, as these are un-exportable due to substance painter limitations.")
+        TimedMessageBox("Error", "The generated image is not the same as the snapshot. Make sure you are not using geometry masks, as these are un-exportable due to substance painter limitations.", 5000)
+        #QMessageBox.information(None, "Error", "The generated image is not the same as the snapshot. Make sure you are not using geometry masks, as these are un-exportable due to substance painter limitations.")
+
+def TimedMessageBox(title, message, timeout=0):
+    mbox = QMessageBox()
+    mbox.setWindowTitle(title)
+    mbox.setText(message)
+    mbox.setStandardButtons(QMessageBox.Ok)
+    mbox.setDefaultButton(QMessageBox.Ok)
+
+    mbox.show()
+    QTimer.singleShot(timeout, mbox.accept)
+
+    #setup the window title to display timeouts
+    if timeout > 0:
+        #subdivide the timeout by 1000 to get seconds
+        timeoutInSeconds = timeout / 1000
+        #round the timeout to the nearest second
+        timeoutInSeconds = round(timeoutInSeconds)
+        for i in range(1, timeoutInSeconds + 1):
+            timedTitle = title + " (" + str(timeoutInSeconds - i) + ")"
+            QTimer.singleShot(i * 1000, lambda: mbox.setWindowTitle(timedTitle))
 
 class Window(QWidget):
   
