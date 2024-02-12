@@ -117,6 +117,10 @@ AlgDialog {
                     id: allButton
                     text: qsTr("All")
                 }
+                AlgButton {
+                    id: colorButton
+                    text: qsTr("Color")
+                }
             }
 
             AlgScrollView {
@@ -175,6 +179,22 @@ AlgDialog {
                                     target: allButton
                                     function onClicked() {
                                        checked = true
+                                    }
+                                }
+                                Connections {
+                                    target: colorButton
+                                    function onClicked() {
+                                        //an example documentPath is "MaterialName..ChannelName"
+                                        //get the channel name on its own
+                                        var channelSplit = documentPath.split('.')
+                                        var channelName = channelSplit[channelSplit.length - 1]
+                                        
+                                        //Loop through all of the items and only check the ones that are basecolor and emissive
+                                        if (channelName === "basecolor" || channelName === "emissive" || channelSplit.length === 1) {
+                                            checked = true
+                                        } else {
+                                            checked = false
+                                        }
                                     }
                                 }
                                 Connections {

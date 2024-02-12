@@ -296,7 +296,9 @@ KritaExporter.prototype = {
     function updateProgress() {
       progress.value++;
       alg.log.info("Progress: " + progress.value + "/" + progress.total);
-      self.logProgressText("Exporting " + progress.value + "/" + progress.total + " (" + Math.round(progress.value / progress.total * 100) + "%) layers to Krita");
+      var percent = Math.round(progress.value / progress.total * 100);
+      self.logProgressText("Exporting {0}/{1} ({2}%) layers to Krita. Current task: {3}".format(progress.value, progress.total, percent, layer.name));
+      //self.logProgressText("Exporting " + progress.value + "/" + progress.total + " (" + Math.round(progress.value / progress.total * 100) + "%) layers to Krita");
       self.logProgress(progress.value, progress.total);
     }
   },
@@ -455,3 +457,10 @@ function KritaExporter(ptext, pbar) {
 function importPainterDocument(ptext, pbar) {
   new KritaExporter(ptext, pbar);
 }
+
+String.prototype.format = function () {
+  var args = arguments;
+  return this.replace(/{([0-9]+)}/g, function (match, index) {
+    return typeof args[index] == 'undefined' ? match : args[index];
+  });
+};
